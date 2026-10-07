@@ -158,6 +158,16 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         ),
     );
 
+    // A panel revealed by a sibling selector on its toggle, with no transition or size change
+    [$inPage, $inPanel] = $placements(7, 2);
+    file_put_contents(
+        "{$out}/sibling-toggle.html",
+        $page(
+            "<section id='top'>{$inPage}</section><button id='toggle' aria-expanded='false'>More</button><section class='panel' id='panel'>{$inPanel}</section><div class='spacer'></div>",
+            '.panel { visibility: hidden; } button[aria-expanded="true"] + .panel { visibility: visible; }',
+        ),
+    );
+
     // Two placements close enough to be on screen together
     [$first, $second] = $placements(7, 2);
     file_put_contents(

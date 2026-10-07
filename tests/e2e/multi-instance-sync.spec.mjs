@@ -181,6 +181,21 @@ test.describe('the form on the page and in a modal', () => {
   });
 });
 
+test.describe('the form on the page and in a modal, opened while the form is submitting', () => {
+  test('moves into the modal once the submission ends', async ({ page }) => {
+    await open(page, 'modal');
+    await page.evaluate(() => (window.gf_submitting_7 = true));
+
+    await page.evaluate(() => (document.getElementById('modal').style.display = 'block'));
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+
+    await page.evaluate(() => (window.gf_submitting_7 = false));
+    await page.waitForTimeout(600);
+    expect(await holder(page)).toBe('modal');
+  });
+});
+
 test.describe('the form on the page and in a modal hidden with visibility', () => {
   test('stays out of the closed modal while scrolling, even though the modal is in the viewport', async ({
     page,
@@ -221,6 +236,27 @@ test.describe('the form on the page and in a modal hidden by an attribute', () =
     expect(await holder(page)).toBe('modal');
 
     await page.evaluate(() => document.getElementById('modal').setAttribute('aria-hidden', 'true'));
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('the form on the page and in a panel revealed by its toggle', () => {
+  test('moves into the panel when a sibling attribute reveals it, and back', async ({ page }) => {
+    const errors = await open(page, 'sibling-toggle');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+
+    await page.evaluate(() =>
+      document.getElementById('toggle').setAttribute('aria-expanded', 'true'),
+    );
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('panel');
+
+    await page.evaluate(() =>
+      document.getElementById('toggle').setAttribute('aria-expanded', 'false'),
+    );
     await page.waitForTimeout(400);
     expect(await holder(page)).toBe('top');
     expect(errors).toEqual([]);

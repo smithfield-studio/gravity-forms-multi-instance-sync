@@ -50,9 +50,14 @@
       return window['gf_submitting_' + id];
     };
 
+    // Returns false if the form can't move yet because it's submitting
     var moveTo = function (slot) {
-      if (slot === holder || submitting()) {
-        return;
+      if (slot === holder) {
+        return true;
+      }
+
+      if (submitting()) {
+        return false;
       }
 
       holder.style.minHeight = holder.offsetHeight + 'px';
@@ -65,6 +70,8 @@
       slot.prepend(form);
 
       holder = slot;
+
+      return true;
     };
 
     var intersection = new IntersectionObserver(
@@ -88,13 +95,15 @@
       { rootMargin: '50% 0px' },
     );
 
-    // A slot going from hidden to shown has been revealed on purpose, e.g. a modal opening
+    // A slot going from hidden to shown has been revealed on purpose, e.g. a modal opening. A reveal while the form
+    // is submitting stays pending (the slot isn't marked shown) until the move can happen or the slot hides again.
     checks.push(function () {
       slots.forEach(function (slot) {
         var isShownNow = isShown(slot);
 
-        if (isShownNow && shown.get(slot) === false) {
-          moveTo(slot);
+        if (isShownNow && shown.get(slot) === false && !moveTo(slot)) {
+          setTimeout(schedule, 250);
+          return;
         }
 
         shown.set(slot, isShownNow);
@@ -109,8 +118,8 @@
             return near.has(slot);
           })[0] || candidates[0];
 
-        if (target) {
-          moveTo(target);
+        if (target && !moveTo(target)) {
+          setTimeout(schedule, 250);
         }
       }
     });
@@ -132,29 +141,36 @@
     return;
   }
 
+  // Checks run before the next paint, so a revealed slot never shows its link first, but at most every 100ms: any
+  // attribute on the page can reveal a slot (e.g. a sibling selector), and animations change attributes every frame
   var scheduled = false;
+  var lastCheck = 0;
+  var check = function () {
+    scheduled = false;
+    lastCheck = Date.now();
+    checks.forEach(function (run) {
+      run();
+    });
+  };
   var schedule = function () {
     if (scheduled) {
       return;
     }
 
     scheduled = true;
-    requestAnimationFrame(function () {
-      scheduled = false;
-      checks.forEach(function (check) {
-        check();
-      });
-    });
+    var wait = lastCheck + 100 - Date.now();
+
+    if (wait > 0) {
+      setTimeout(function () {
+        requestAnimationFrame(check);
+      }, wait);
+    } else {
+      requestAnimationFrame(check);
+    }
   };
 
-  // Only a change to a slot or one of its ancestors can show or hide it
-  var holdsSlot = function (node) {
-    return allSlots.some(function (slot) {
-      return node.contains(slot);
-    });
-  };
-
-  // Display changes resize the slot; visibility changes come from an attribute, a transition ending or a breakpoint
+  // Display changes resize the slot; visibility changes come from an attribute, a transition ending, a breakpoint or
+  // a :target change
   if ('ResizeObserver' in window) {
     var resize = new ResizeObserver(schedule);
     allSlots.forEach(function (slot) {
@@ -162,28 +178,17 @@
     });
   }
 
-  window.addEventListener('resize', schedule);
-
-  new MutationObserver(function (records) {
-    if (
-      records.some(function (record) {
-        return holdsSlot(record.target);
-      })
-    ) {
-      schedule();
-    }
-  }).observe(document.documentElement, { attributes: true, subtree: true });
+  new MutationObserver(schedule).observe(document.documentElement, {
+    attributes: true,
+    subtree: true,
+  });
 
   ['transitionend', 'animationend'].forEach(function (type) {
-    document.addEventListener(
-      type,
-      function (event) {
-        if (event.target instanceof Node && holdsSlot(event.target)) {
-          schedule();
-        }
-      },
-      true,
-    );
+    document.addEventListener(type, schedule, true);
+  });
+
+  ['resize', 'hashchange'].forEach(function (type) {
+    window.addEventListener(type, schedule);
   });
 
   schedule();
