@@ -170,7 +170,7 @@
   };
 
   // Display changes resize the slot; visibility changes come from an attribute, a transition ending, a breakpoint,
-  // a :target change or a checked input
+  // a :target change, a checked input or focus
   if ('ResizeObserver' in window) {
     var resize = new ResizeObserver(schedule);
     allSlots.forEach(function (slot) {
@@ -183,8 +183,7 @@
     subtree: true,
   });
 
-  // change covers reveals by :checked, e.g. CSS-only tabs
-  ['transitionend', 'animationend', 'change'].forEach(function (type) {
+  ['transitionend', 'animationend', 'change', 'focusin', 'focusout'].forEach(function (type) {
     document.addEventListener(type, schedule, true);
   });
 

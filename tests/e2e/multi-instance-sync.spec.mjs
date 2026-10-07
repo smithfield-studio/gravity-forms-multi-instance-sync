@@ -280,6 +280,25 @@ test.describe('the form on the page and in a tab revealed by a checked input', (
   });
 });
 
+test.describe('the form on the page and in a panel shown on focus', () => {
+  test('moves into the panel when focus enters its menu, and back when focus leaves', async ({
+    page,
+  }) => {
+    const errors = await open(page, 'focus-within');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+
+    await page.focus('#open');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('panel');
+
+    await page.focus('#elsewhere');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('placements on screen together', () => {
   test('the form stays in the first placement and the second shows its link', async ({ page }) => {
     await open(page, 'side-by-side');

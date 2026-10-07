@@ -178,6 +178,16 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         ),
     );
 
+    // A panel shown while focus is within its menu
+    [$inPage, $inPanel] = $placements(7, 2);
+    file_put_contents(
+        "{$out}/focus-within.html",
+        $page(
+            "<section id='top'>{$inPage}</section><div class='menu'><button id='open'>Contact us</button><section class='panel' id='panel'>{$inPanel}</section></div><button id='elsewhere'>Elsewhere</button><div class='spacer'></div>",
+            '.panel { visibility: hidden; } .menu:focus-within .panel { visibility: visible; }',
+        ),
+    );
+
     // Two placements close enough to be on screen together
     [$first, $second] = $placements(7, 2);
     file_put_contents(
