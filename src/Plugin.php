@@ -19,6 +19,7 @@ final class Plugin {
 
     public function boot(): void {
         add_action('init', [$this, 'loadTextdomain']);
+        add_action('change_locale', [$this, 'loadTextdomain']);
         add_filter('gform_get_form_filter', [$this, 'render'], 99, 2);
         add_filter('rocket_delay_js_exclusions', [$this, 'excludeFromDelayJs']);
     }
@@ -27,10 +28,13 @@ final class Plugin {
      * Loaded by path rather than load_plugin_textdomain(), so it works wherever the plugin is installed (plugins,
      * mu-plugins, a symlink). A translation installed in wp-content/languages/plugins loads first, so it wins over the
      * bundled one. WordPress 6.5+ picks the .l10n.php file next to the .mo.
+     *
+     * Also runs on change_locale: switch_to_locale() unloads the domain, and WordPress's just-in-time loading only
+     * looks in wp-content/languages.
      */
-    public function loadTextdomain(): void {
+    public function loadTextdomain(string $locale = ''): void {
         $domain = 'gravity-forms-multi-instance-sync';
-        $locale = determine_locale();
+        $locale = $locale ?: determine_locale();
 
         load_textdomain($domain, WP_LANG_DIR . "/plugins/{$domain}-{$locale}.mo", $locale);
         load_textdomain($domain, dirname($this->file) . "/languages/{$domain}-{$locale}.mo", $locale);

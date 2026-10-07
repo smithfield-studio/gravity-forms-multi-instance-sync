@@ -263,6 +263,23 @@ test.describe('the form on the page and in a panel revealed by its toggle', () =
   });
 });
 
+test.describe('the form on the page and in a tab revealed by a checked input', () => {
+  test('moves into the tab when the input is checked, and back', async ({ page }) => {
+    const errors = await open(page, 'checked-tab');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+
+    await page.check('#show-tab');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('tab');
+
+    await page.uncheck('#show-tab');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('placements on screen together', () => {
   test('the form stays in the first placement and the second shows its link', async ({ page }) => {
     await open(page, 'side-by-side');

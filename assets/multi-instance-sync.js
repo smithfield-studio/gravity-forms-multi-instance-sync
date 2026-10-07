@@ -169,8 +169,8 @@
     }
   };
 
-  // Display changes resize the slot; visibility changes come from an attribute, a transition ending, a breakpoint or
-  // a :target change
+  // Display changes resize the slot; visibility changes come from an attribute, a transition ending, a breakpoint,
+  // a :target change or a checked input
   if ('ResizeObserver' in window) {
     var resize = new ResizeObserver(schedule);
     allSlots.forEach(function (slot) {
@@ -183,7 +183,8 @@
     subtree: true,
   });
 
-  ['transitionend', 'animationend'].forEach(function (type) {
+  // change covers reveals by :checked, e.g. CSS-only tabs
+  ['transitionend', 'animationend', 'change'].forEach(function (type) {
     document.addEventListener(type, schedule, true);
   });
 

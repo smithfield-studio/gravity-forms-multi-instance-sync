@@ -168,6 +168,16 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         ),
     );
 
+    // A CSS-only tab revealed by :checked, with no attribute change
+    [$inPage, $inTab] = $placements(7, 2);
+    file_put_contents(
+        "{$out}/checked-tab.html",
+        $page(
+            "<section id='top'>{$inPage}</section><label><input type='checkbox' id='show-tab'> Show</label><section class='tab' id='tab'>{$inTab}</section><div class='spacer'></div>",
+            '.tab { visibility: hidden; } label:has(#show-tab:checked) + .tab { visibility: visible; }',
+        ),
+    );
+
     // Two placements close enough to be on screen together
     [$first, $second] = $placements(7, 2);
     file_put_contents(

@@ -116,6 +116,16 @@ class TestPlugin extends WP_UnitTestCase {
         $this->assertStringContainsString('>Gå till formuläret</a>', $html);
     }
 
+    public function test_the_link_text_follows_a_locale_switch(): void {
+        switch_to_locale('de_DE');
+
+        $this->plugin->render($this->markup, $this->form);
+        $html = $this->plugin->render($this->markup, $this->form);
+
+        restore_current_locale();
+        $this->assertStringContainsString('>Zum Formular</a>', $html);
+    }
+
     public function test_a_translation_installed_in_wp_content_languages_wins_over_the_bundled_one(): void {
         $file = WP_LANG_DIR . '/plugins/gravity-forms-multi-instance-sync-sv_SE.mo';
         wp_mkdir_p(dirname($file));
