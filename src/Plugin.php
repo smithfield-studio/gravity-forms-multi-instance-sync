@@ -5,11 +5,10 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync;
 /**
  * Gravity Forms can't run the same form twice on one page: the copies share element IDs, so the second one's
  * steps, validation and conditional logic act on the first. Each form renders once per page instead, and later
- * placements get an empty slot that the form moves into as the visitor scrolls (assets/multi-instance-sync.js).
- * Without JS, a slot is a link to the form.
+ * placements get an empty slot that the form moves into as the visitor scrolls to it or reveals it
+ * (assets/multi-instance-sync.js). Without JS, a slot is a link to the form.
  */
-final class Plugin
-{
+final class Plugin {
     /** @var array<int, int> Placements rendered so far this request, by form ID */
     private array $placements = [];
 
@@ -18,28 +17,33 @@ final class Plugin
         private readonly string $version,
     ) {}
 
-    public function boot(): void
-    {
+    public function boot(): void {
         add_action('init', [$this, 'loadTextdomain']);
         add_filter('gform_get_form_filter', [$this, 'render'], 99, 2);
         add_filter('rocket_delay_js_exclusions', [$this, 'excludeFromDelayJs']);
     }
 
-    public function loadTextdomain(): void
-    {
-        load_plugin_textdomain('gravity-forms-multi-instance-sync', false, dirname(plugin_basename($this->file)) . '/languages');
+    /**
+     * Loaded by path rather than load_plugin_textdomain(), so it works wherever the plugin is installed (plugins,
+     * mu-plugins, a symlink). WordPress 6.5+ picks the .l10n.php file next to the .mo.
+     */
+    public function loadTextdomain(): void {
+        $domain = 'gravity-forms-multi-instance-sync';
+        $locale = determine_locale();
+
+        load_textdomain($domain, dirname($this->file) . "/languages/{$domain}-{$locale}.mo", $locale);
     }
 
     /**
      * @param array<string, mixed> $form
      */
-    public function render(string $formString, array $form): string
-    {
-        if (is_admin() || wp_doing_ajax() || empty($form['id'])) {
+    public function render(string $formString, array $form): string {
+        $id = $this->formId($form);
+
+        if (is_admin() || wp_doing_ajax() || $id === 0) {
             return $formString;
         }
 
-        $id = (int) $form['id'];
         $placement = $this->placements[$id] = ($this->placements[$id] ?? 0) + 1;
 
         if ($placement === 1) {
@@ -72,11 +76,10 @@ final class Plugin
      * WP Rocket's Delay JS would hold back the move out of a hidden placement until the visitor interacts.
      *
      * @param mixed $excluded
-     * @return array<int, string>
+     * @return list<string>
      */
-    public function excludeFromDelayJs(mixed $excluded): array
-    {
-        $excluded = is_array($excluded) ? $excluded : [];
+    public function excludeFromDelayJs(mixed $excluded): array {
+        $excluded = is_array($excluded) ? array_values(array_filter($excluded, 'is_string')) : [];
         $excluded[] = 'gf-mis-move-';
 
         return $excluded;
@@ -85,51 +88,54 @@ final class Plugin
     /**
      * @param array<string, mixed> $form
      */
-    private function link(array $form, bool $hidden): string
-    {
-        /**
-         * Text for the link that stands in for the form in an empty placement.
-         *
-         * @param string $text
-         * @param array $form
-         */
-        $label = (string) apply_filters(
-            'gform_multi_instance_sync_link_text',
-            __('Go to the form', 'gravity-forms-multi-instance-sync'),
-            $form,
-        );
+    private function formId(array $form): int {
+        return is_numeric($form['id'] ?? null) ? (int) $form['id'] : 0;
+    }
+
+    /**
+     * Renders templates/link.php, or the theme's gravity-forms-multi-instance-sync/link.php.
+     *
+     * @param array<string, mixed> $form
+     */
+    private function link(array $form, bool $hidden): string {
+        $template = locate_template('gravity-forms-multi-instance-sync/link.php')
+        ?: dirname($this->file) . '/templates/link.php';
 
         /**
-         * Classes for the link that stands in for the form in an empty placement, e.g. the theme's button classes.
+         * Path to the link template, for themes that keep views elsewhere.
          *
-         * @param string $classes
+         * @param string $template
          * @param array $form
          */
-        $classes = (string) apply_filters('gform_multi_instance_sync_link_class', 'gf-mis-slot__link button', $form);
+        $template = (string) apply_filters('gform_multi_instance_sync_link_template', $template, $form);
 
-        return sprintf(
-            '<a class="%s" href="#gf-mis-form-%d"%s>%s</a>',
-            esc_attr($classes),
-            (int) $form['id'],
+        $attributes = sprintf(
+            'href="#gf-mis-form-%d" data-gf-mis-link%s',
+            $this->formId($form),
             $hidden ? ' style="display: none"' : '',
-            esc_html($label),
         );
+
+        ob_start();
+        (static function (string $template, array $form, string $attributes): void {
+            include $template;
+        })($template, $form, $attributes);
+
+        return trim((string) ob_get_clean());
     }
 
     /**
      * Runs as the page is parsed, before the deferred script: pages often pair a mobile-only and a desktop-only
      * placement, so if the form sits in a hidden one and this one shows, it moves in straight away.
      */
-    private function moveScript(int $id): string
-    {
+    private function moveScript(int $id): string {
         return <<<JS
             (function (slot) {
                 var current = document.getElementById('gf-mis-form-{$id}');
                 var form = current && current.querySelector('.gf-mis-slot__form');
                 if (!form || form.getClientRects().length || !slot.getClientRects().length) return;
-                current.querySelector('a[href="#gf-mis-form-{$id}"]').style.display = '';
+                current.querySelector('[data-gf-mis-link]').style.display = '';
                 current.removeAttribute('id');
-                slot.querySelector('a[href="#gf-mis-form-{$id}"]').style.display = 'none';
+                slot.querySelector('[data-gf-mis-link]').style.display = 'none';
                 slot.id = 'gf-mis-form-{$id}';
                 slot.prepend(form);
             })(document.currentScript.previousElementSibling);

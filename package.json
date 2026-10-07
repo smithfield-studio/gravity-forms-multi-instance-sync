@@ -1,0 +1,24 @@
+{
+    "name": "gravity-forms-multi-instance-sync",
+    "private": true,
+    "description": "Dev tooling (lint/format) for Multi-Instance Sync for Gravity Forms.",
+    "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+    },
+    "scripts": {
+        "format": "oxfmt",
+        "format:check": "oxfmt --check",
+        "lint": "oxlint",
+        "lint:fix": "oxlint --fix",
+        "check": "npm run format:check && npm run lint",
+        "translate:make-pot": "wp i18n make-pot . languages/gravity-forms-multi-instance-sync.pot --domain=gravity-forms-multi-instance-sync --exclude=node_modules,vendor,languages,tests",
+        "translate:make-php": "wp i18n make-php languages",
+        "translate:make-mo": "wp i18n make-mo languages",
+        "test:e2e": "playwright test"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.63.0",
+        "oxfmt": "^0.42.0",
+        "oxlint": "^1.57.0"
+    }
+}

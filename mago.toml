@@ -1,0 +1,10 @@
+php-version = "8.2"
+
+[source]
+paths = ["gravity-forms-multi-instance-sync.php", "src", "templates", "tests"]
+excludes = ["vendor/**", "node_modules/**"]
+
+[formatter]
+function-brace-style = "same_line"
+method-brace-style = "same_line"
+classlike-brace-style = "same_line"

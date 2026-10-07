@@ -27,5 +27,34 @@
     },
     "require": {
         "php": ">=8.2"
+    },
+    "require-dev": {
+        "carthage-software/mago": "^1.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^9.0",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "yoast/phpunit-polyfills": "^3.0"
+    },
+    "scripts": {
+        "format": "@php ./vendor/bin/mago format",
+        "format:check": "@php ./vendor/bin/mago format --dry-run",
+        "phpstan": "phpstan analyse --memory-limit=1G",
+        "test": "@php ./vendor/bin/phpunit"
+    },
+    "scripts-aliases": {
+        "phpstan": [
+            "stan",
+            "analyze",
+            "analyse"
+        ],
+        "test": [
+            "unit",
+            "tests"
+        ]
+    },
+    "config": {
+        "platform": {
+            "php": "8.2"
+        }
     }
 }

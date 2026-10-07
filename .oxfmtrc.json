@@ -1,0 +1,15 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "singleQuote": true,
+    "sortPackageJson": false,
+    "ignorePatterns": [
+        "vendor/**",
+        "node_modules/**",
+        ".github/**",
+        "**/*.php",
+        "**/*.svg",
+        "**/*.md",
+        "composer.lock",
+        "package-lock.json"
+    ]
+}
