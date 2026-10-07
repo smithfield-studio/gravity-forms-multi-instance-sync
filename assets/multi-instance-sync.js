@@ -170,7 +170,7 @@
   };
 
   // Display changes resize the slot; visibility changes come from an attribute, a transition ending, a breakpoint,
-  // a :target change, a checked input or focus
+  // a :target change, a checked input, focus or hover
   if ('ResizeObserver' in window) {
     var resize = new ResizeObserver(schedule);
     allSlots.forEach(function (slot) {
@@ -183,7 +183,15 @@
     subtree: true,
   });
 
-  ['transitionend', 'animationend', 'change', 'focusin', 'focusout'].forEach(function (type) {
+  [
+    'transitionend',
+    'animationend',
+    'change',
+    'focusin',
+    'focusout',
+    'pointerover',
+    'pointerout',
+  ].forEach(function (type) {
     document.addEventListener(type, schedule, true);
   });
 

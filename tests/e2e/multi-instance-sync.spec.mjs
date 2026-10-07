@@ -280,6 +280,23 @@ test.describe('the form on the page and in a panel shown on focus', () => {
   });
 });
 
+test.describe('the form on the page and in a panel shown on hover', () => {
+  test('moves into the panel when the pointer is over its menu, and back when it leaves', async ({
+    page,
+  }) => {
+    const errors = await open(page, 'hover');
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
+
+    await page.hover('#open');
+    await expect.poll(() => holder(page)).toBe('panel');
+
+    await page.hover('#elsewhere');
+    await expect.poll(() => holder(page)).toBe('top');
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('placements on screen together', () => {
   test('the form stays in the first placement and the second shows its link', async ({ page }) => {
     await open(page, 'side-by-side');

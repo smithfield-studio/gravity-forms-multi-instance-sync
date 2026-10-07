@@ -188,6 +188,16 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         ),
     );
 
+    // A panel shown while the pointer is over its menu
+    [$inPage, $inPanel] = $placements(7, 2);
+    file_put_contents(
+        "{$out}/hover.html",
+        $page(
+            "<section id='top'>{$inPage}</section><div class='menu'><span id='open'>Contact us</span><section class='panel' id='panel'>{$inPanel}</section></div><p id='elsewhere'>Elsewhere</p><div class='spacer'></div>",
+            '.panel { visibility: hidden; } .menu:hover .panel { visibility: visible; }',
+        ),
+    );
+
     // Two placements close enough to be on screen together
     [$first, $second] = $placements(7, 2);
     file_put_contents(

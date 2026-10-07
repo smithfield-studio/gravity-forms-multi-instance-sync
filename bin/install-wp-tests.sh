@@ -114,7 +114,7 @@ install_test_suite() {
 			 BRANCH=$WP_VERSION
 		fi
 		
-		git clone --depth 1 --branch $BRANCH git://develop.git.wordpress.org/ $TMPDIR/wordpress-develop/wordpress
+		git clone --depth 1 --branch $BRANCH https://github.com/WordPress/wordpress-develop.git $TMPDIR/wordpress-develop/wordpress
 		cp -r $TMPDIR/wordpress-develop/wordpress/tests/phpunit/includes $WP_TESTS_DIR/includes
 		cp -r $TMPDIR/wordpress-develop/wordpress/tests/phpunit/data $WP_TESTS_DIR/data
 	fi
