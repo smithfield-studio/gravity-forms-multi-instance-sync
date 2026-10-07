@@ -14,7 +14,7 @@ declare(strict_types=1);
  * GitHub Plugin URI: https://github.com/smithfield-studio/gravity-forms-multi-instance-sync
  * GitHub Branch:     main
  * Requires PHP:      8.4
- * Requires at least: 6.0
+ * Requires at least: 6.3
  * Text Domain:       gravity-forms-multi-instance-sync
  * Domain Path:       /languages
  *
