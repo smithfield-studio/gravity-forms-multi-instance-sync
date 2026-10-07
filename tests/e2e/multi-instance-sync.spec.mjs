@@ -38,12 +38,12 @@ test.describe('the same form at the top and bottom of a page', () => {
     await page.fill('#input_7_1', 'visitor@example.com');
 
     await scrollTo(page, '#bottom');
-    expect(await holder(page)).toBe('bottom');
+    await expect.poll(() => holder(page)).toBe('bottom');
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
     await expect(page.locator('#bottom [data-gf-mis-link]')).toBeHidden();
 
     await scrollTo(page, '#top');
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
     expect(errors).toEqual([]);
   });
@@ -119,12 +119,10 @@ test.describe('a mobile-only and a desktop-only placement', () => {
     await page.fill('#input_7_1', 'visitor@example.com');
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('mobile');
+    await expect.poll(() => holder(page)).toBe('mobile');
 
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('desktop');
+    await expect.poll(() => holder(page)).toBe('desktop');
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
     expect(errors).toEqual([]);
   });
@@ -136,12 +134,10 @@ test.describe('a mobile-only and a desktop-only placement hidden with visibility
     expect(await holder(page)).toBe('desktop');
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('mobile');
+    await expect.poll(() => holder(page)).toBe('mobile');
 
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('desktop');
+    await expect.poll(() => holder(page)).toBe('desktop');
     expect(errors).toEqual([]);
   });
 });
@@ -154,13 +150,11 @@ test.describe('the form on the page and in a modal', () => {
     await page.fill('#input_7_1', 'visitor@example.com');
 
     await page.evaluate(() => (document.getElementById('modal').style.display = 'block'));
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('modal');
+    await expect.poll(() => holder(page)).toBe('modal');
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
 
     await page.evaluate(() => (document.getElementById('modal').style.display = 'none'));
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
     expect(errors).toEqual([]);
   });
@@ -170,14 +164,12 @@ test.describe('the form on the page and in a modal', () => {
   }) => {
     await open(page, 'modal');
     await page.evaluate(() => (document.getElementById('modal').style.display = 'block'));
-    await page.waitForTimeout(400);
+    await expect.poll(() => holder(page)).toBe('modal');
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(400);
 
     await page.evaluate(() => (document.getElementById('modal').style.display = 'none'));
-    await page.waitForTimeout(400);
-
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
   });
 });
 
@@ -191,8 +183,7 @@ test.describe('the form on the page and in a modal, opened while the form is sub
     expect(await holder(page)).toBe('top');
 
     await page.evaluate(() => (window.gf_submitting_7 = false));
-    await page.waitForTimeout(600);
-    expect(await holder(page)).toBe('modal');
+    await expect.poll(() => holder(page)).toBe('modal');
   });
 });
 
@@ -213,13 +204,11 @@ test.describe('the form on the page and in a modal hidden with visibility', () =
     await page.fill('#input_7_1', 'visitor@example.com');
 
     await page.evaluate(() => document.getElementById('modal').classList.add('is-open'));
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('modal');
+    await expect.poll(() => holder(page)).toBe('modal');
     await expect(page.locator('#modal #input_7_1')).toBeVisible();
 
     await page.evaluate(() => document.getElementById('modal').classList.remove('is-open'));
-    await page.waitForTimeout(600);
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
     expect(errors).toEqual([]);
   });
@@ -232,12 +221,10 @@ test.describe('the form on the page and in a modal hidden by an attribute', () =
     await page.evaluate(() =>
       document.getElementById('modal').setAttribute('aria-hidden', 'false'),
     );
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('modal');
+    await expect.poll(() => holder(page)).toBe('modal');
 
     await page.evaluate(() => document.getElementById('modal').setAttribute('aria-hidden', 'true'));
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
     expect(errors).toEqual([]);
   });
 });
@@ -251,14 +238,12 @@ test.describe('the form on the page and in a panel revealed by its toggle', () =
     await page.evaluate(() =>
       document.getElementById('toggle').setAttribute('aria-expanded', 'true'),
     );
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('panel');
+    await expect.poll(() => holder(page)).toBe('panel');
 
     await page.evaluate(() =>
       document.getElementById('toggle').setAttribute('aria-expanded', 'false'),
     );
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
     expect(errors).toEqual([]);
   });
 });
@@ -270,12 +255,10 @@ test.describe('the form on the page and in a tab revealed by a checked input', (
     expect(await holder(page)).toBe('top');
 
     await page.check('#show-tab');
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('tab');
+    await expect.poll(() => holder(page)).toBe('tab');
 
     await page.uncheck('#show-tab');
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
     expect(errors).toEqual([]);
   });
 });
@@ -289,12 +272,10 @@ test.describe('the form on the page and in a panel shown on focus', () => {
     expect(await holder(page)).toBe('top');
 
     await page.focus('#open');
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('panel');
+    await expect.poll(() => holder(page)).toBe('panel');
 
     await page.focus('#elsewhere');
-    await page.waitForTimeout(400);
-    expect(await holder(page)).toBe('top');
+    await expect.poll(() => holder(page)).toBe('top');
     expect(errors).toEqual([]);
   });
 });
@@ -314,11 +295,11 @@ test.describe('two different forms', () => {
     await open(page, 'two-forms');
 
     await scrollTo(page, '#a-bottom');
-    expect(await holder(page, 7)).toBe('a-bottom');
+    await expect.poll(() => holder(page, 7)).toBe('a-bottom');
     expect(await holder(page, 8)).toBe('b-top');
 
     await scrollTo(page, '#b-bottom');
-    expect(await holder(page, 8)).toBe('b-bottom');
+    await expect.poll(() => holder(page, 8)).toBe('b-bottom');
   });
 });
 
