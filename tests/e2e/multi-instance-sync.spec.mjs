@@ -148,6 +148,50 @@ test.describe('the form on the page and in a modal', () => {
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
     expect(errors).toEqual([]);
   });
+
+  test('moves back to the page when the modal closes with the page placement off screen', async ({
+    page,
+  }) => {
+    await open(page, 'modal');
+    await page.evaluate(() => (document.getElementById('modal').style.display = 'block'));
+    await page.waitForTimeout(400);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(400);
+
+    await page.evaluate(() => (document.getElementById('modal').style.display = 'none'));
+    await page.waitForTimeout(400);
+
+    expect(await holder(page)).toBe('top');
+  });
+});
+
+test.describe('the form on the page and in a modal hidden with visibility', () => {
+  test('stays out of the closed modal while scrolling, even though the modal is in the viewport', async ({
+    page,
+  }) => {
+    await open(page, 'modal-visibility');
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(400);
+
+    expect(await holder(page)).toBe('top');
+  });
+
+  test('moves into the modal when it fades in, and back after it fades out', async ({ page }) => {
+    const errors = await open(page, 'modal-visibility');
+    await page.fill('#input_7_1', 'visitor@example.com');
+
+    await page.evaluate(() => document.getElementById('modal').classList.add('is-open'));
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('modal');
+    await expect(page.locator('#modal #input_7_1')).toBeVisible();
+
+    await page.evaluate(() => document.getElementById('modal').classList.remove('is-open'));
+    await page.waitForTimeout(600);
+    expect(await holder(page)).toBe('top');
+    await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
+    expect(errors).toEqual([]);
+  });
 });
 
 test.describe('placements on screen together', () => {

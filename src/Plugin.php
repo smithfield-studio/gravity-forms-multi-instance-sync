@@ -25,12 +25,14 @@ final class Plugin {
 
     /**
      * Loaded by path rather than load_plugin_textdomain(), so it works wherever the plugin is installed (plugins,
-     * mu-plugins, a symlink). WordPress 6.5+ picks the .l10n.php file next to the .mo.
+     * mu-plugins, a symlink). A translation installed in wp-content/languages/plugins loads first, so it wins over the
+     * bundled one. WordPress 6.5+ picks the .l10n.php file next to the .mo.
      */
     public function loadTextdomain(): void {
         $domain = 'gravity-forms-multi-instance-sync';
         $locale = determine_locale();
 
+        load_textdomain($domain, WP_LANG_DIR . "/plugins/{$domain}-{$locale}.mo", $locale);
         load_textdomain($domain, dirname($this->file) . "/languages/{$domain}-{$locale}.mo", $locale);
     }
 
@@ -73,14 +75,15 @@ final class Plugin {
     }
 
     /**
-     * WP Rocket's Delay JS would hold back the move out of a hidden placement until the visitor interacts.
+     * WP Rocket's Delay JS would hold back the move out of a hidden placement until the visitor interacts, and a
+     * modal opened before the main script runs would show its link instead of the form.
      *
-     * @param mixed $excluded
      * @return list<string>
      */
     public function excludeFromDelayJs(mixed $excluded): array {
-        $excluded = is_array($excluded) ? array_values(array_filter($excluded, 'is_string')) : [];
+        $excluded = is_array($excluded) ? array_values(array_filter($excluded, is_string(...))) : [];
         $excluded[] = 'gf-mis-move-';
+        $excluded[] = 'gf-multi-instance-sync-js';
 
         return $excluded;
     }
@@ -130,9 +133,12 @@ final class Plugin {
     private function moveScript(int $id): string {
         return <<<JS
             (function (slot) {
+                var shown = function (el) {
+                    return el.checkVisibility ? el.checkVisibility({ visibilityProperty: true }) : el.getClientRects().length > 0;
+                };
                 var current = document.getElementById('gf-mis-form-{$id}');
                 var form = current && current.querySelector('.gf-mis-slot__form');
-                if (!form || form.getClientRects().length || !slot.getClientRects().length) return;
+                if (!form || shown(form) || !shown(slot)) return;
                 current.querySelector('[data-gf-mis-link]').style.display = '';
                 current.removeAttribute('id');
                 slot.querySelector('[data-gf-mis-link]').style.display = 'none';

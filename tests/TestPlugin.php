@@ -54,7 +54,7 @@ class TestPlugin extends WP_UnitTestCase {
     public function test_the_link_template_can_be_replaced(): void {
         $template = get_temp_dir() . 'gf-mis-link-test.php';
         file_put_contents($template, '<a class="custom" <?php echo $attributes; ?>>Custom</a>');
-        $filter = fn() => $template;
+        $filter = fn(): string => $template;
         add_filter('gform_multi_instance_sync_link_template', $filter);
 
         $this->plugin->render($this->markup, $this->form);
@@ -65,9 +65,12 @@ class TestPlugin extends WP_UnitTestCase {
         $this->assertStringContainsString('<a class="custom" href="#gf-mis-form-7" data-gf-mis-link>Custom</a>', $html);
     }
 
-    public function test_the_mover_is_excluded_from_wp_rocket_delay_js(): void {
-        $this->assertSame(['existing', 'gf-mis-move-'], $this->plugin->excludeFromDelayJs(['existing']));
-        $this->assertSame(['gf-mis-move-'], $this->plugin->excludeFromDelayJs(null));
+    public function test_the_scripts_are_excluded_from_wp_rocket_delay_js(): void {
+        $this->assertSame(
+            ['existing', 'gf-mis-move-', 'gf-multi-instance-sync-js'],
+            $this->plugin->excludeFromDelayJs(['existing']),
+        );
+        $this->assertSame(['gf-mis-move-', 'gf-multi-instance-sync-js'], $this->plugin->excludeFromDelayJs(null));
     }
 
     public function test_ajax_requests_are_left_alone(): void {
@@ -100,7 +103,7 @@ class TestPlugin extends WP_UnitTestCase {
     }
 
     public function test_the_link_text_is_translated(): void {
-        $locale = fn() => 'sv_SE';
+        $locale = fn(): string => 'sv_SE';
         add_filter('locale', $locale);
         unload_textdomain('gravity-forms-multi-instance-sync');
         $this->plugin->loadTextdomain();
@@ -111,6 +114,27 @@ class TestPlugin extends WP_UnitTestCase {
         remove_filter('locale', $locale);
         unload_textdomain('gravity-forms-multi-instance-sync');
         $this->assertStringContainsString('>Gå till formuläret</a>', $html);
+    }
+
+    public function test_a_translation_installed_in_wp_content_languages_wins_over_the_bundled_one(): void {
+        $file = WP_LANG_DIR . '/plugins/gravity-forms-multi-instance-sync-sv_SE.mo';
+        wp_mkdir_p(dirname($file));
+        $mo = new MO();
+        $mo->add_entry(new Translation_Entry(['singular' => 'Go to the form', 'translations' => ['Till formuläret']]));
+        $mo->export_to_file($file);
+
+        $locale = fn(): string => 'sv_SE';
+        add_filter('locale', $locale);
+        unload_textdomain('gravity-forms-multi-instance-sync');
+        $this->plugin->loadTextdomain();
+
+        $this->plugin->render($this->markup, $this->form);
+        $html = $this->plugin->render($this->markup, $this->form);
+
+        remove_filter('locale', $locale);
+        unload_textdomain('gravity-forms-multi-instance-sync');
+        unlink($file);
+        $this->assertStringContainsString('>Till formuläret</a>', $html);
     }
 
     public function test_the_form_filter_runs_late_to_wrap_other_filters_output(): void {

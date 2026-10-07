@@ -2,7 +2,8 @@
  * Each Gravity Form renders once per page, and its later placements are empty slots. The form moves into a slot as it
  * nears the viewport, or straight away when the slot is revealed (a modal opening, a tab or accordion showing it),
  * keeping the visitor's answers and step. While its current slot is near the viewport or it's submitting, scrolling
- * leaves it put, and the slot it leaves keeps its height so the page above doesn't jump.
+ * leaves it put, and the slot it leaves keeps its height so the page above doesn't jump. When its slot is hidden (a
+ * modal closing), it moves to a shown slot, wherever that is.
  */
 (function () {
   if (!('IntersectionObserver' in window)) {
@@ -10,11 +11,20 @@
   }
 
   var groups = {};
+  var allSlots = [];
+  var checks = [];
 
   document.querySelectorAll('.gf-mis-slot').forEach(function (slot) {
     var id = slot.getAttribute('data-gf-mis-form');
     (groups[id] = groups[id] || []).push(slot);
   });
+
+  // Opacity isn't checked: scroll animations fade sections in from 0, which would read as a reveal
+  var isShown = function (slot) {
+    return slot.checkVisibility
+      ? slot.checkVisibility({ visibilityProperty: true })
+      : slot.getClientRects().length > 0;
+  };
 
   Object.keys(groups).forEach(function (id) {
     var slots = groups[id];
@@ -36,6 +46,7 @@
       return slot.contains(form);
     })[0];
     var near = new Set();
+    var shown = new Map();
     var submitting = function () {
       return window['gf_submitting_' + id];
     };
@@ -68,10 +79,10 @@
         });
 
         var target = slots.filter(function (slot) {
-          return slot !== holder && near.has(slot);
+          return slot !== holder && near.has(slot) && isShown(slot);
         })[0];
 
-        if (target && !near.has(holder)) {
+        if (target && !(near.has(holder) && isShown(holder))) {
           moveTo(target);
         }
       },
@@ -79,28 +90,36 @@
     );
 
     // A slot going from hidden to shown has been revealed on purpose, e.g. a modal opening
-    var shown = new Map();
-    var reveal =
-      'ResizeObserver' in window &&
-      new ResizeObserver(function (entries) {
-        entries.forEach(function (entry) {
-          var isShown = entry.target.getClientRects().length > 0;
+    checks.push(function () {
+      slots.forEach(function (slot) {
+        var isShownNow = isShown(slot);
 
-          if (isShown && shown.get(entry.target) === false) {
-            moveTo(entry.target);
-          }
+        if (isShownNow && shown.get(slot) === false) {
+          moveTo(slot);
+        }
 
-          shown.set(entry.target, isShown);
-        });
+        shown.set(slot, isShownNow);
       });
 
-    slots.forEach(function (slot) {
-      intersection.observe(slot);
+      if (!shown.get(holder)) {
+        var candidates = slots.filter(function (slot) {
+          return shown.get(slot);
+        });
+        var target =
+          candidates.filter(function (slot) {
+            return near.has(slot);
+          })[0] || candidates[0];
 
-      if (reveal) {
-        shown.set(slot, slot.getClientRects().length > 0);
-        reveal.observe(slot);
+        if (target) {
+          moveTo(target);
+        }
       }
+    });
+
+    slots.forEach(function (slot) {
+      allSlots.push(slot);
+      shown.set(slot, isShown(slot));
+      intersection.observe(slot);
 
       // The link in a slot without the form scrolls to wherever the form is now
       linkIn(slot).addEventListener('click', function (event) {
@@ -109,4 +128,66 @@
       });
     });
   });
+
+  if (!checks.length) {
+    return;
+  }
+
+  var scheduled = false;
+  var schedule = function () {
+    if (scheduled) {
+      return;
+    }
+
+    scheduled = true;
+    requestAnimationFrame(function () {
+      scheduled = false;
+      checks.forEach(function (check) {
+        check();
+      });
+    });
+  };
+
+  // Only a change to a slot or one of its ancestors can show or hide it
+  var holdsSlot = function (node) {
+    return allSlots.some(function (slot) {
+      return node.contains(slot);
+    });
+  };
+
+  // Display changes resize the slot; visibility changes come from an attribute or a transition ending
+  if ('ResizeObserver' in window) {
+    var resize = new ResizeObserver(schedule);
+    allSlots.forEach(function (slot) {
+      resize.observe(slot);
+    });
+  }
+
+  new MutationObserver(function (records) {
+    if (
+      records.some(function (record) {
+        return holdsSlot(record.target);
+      })
+    ) {
+      schedule();
+    }
+  }).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'style', 'hidden', 'open'],
+    subtree: true,
+  });
+
+  ['transitionend', 'animationend'].forEach(function (type) {
+    document.addEventListener(
+      type,
+      function (event) {
+        if (event.target instanceof Node && holdsSlot(event.target)) {
+          schedule();
+        }
+      },
+      true,
+    );
+  });
+
+  schedule();
 })();

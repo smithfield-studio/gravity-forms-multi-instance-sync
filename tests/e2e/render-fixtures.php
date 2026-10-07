@@ -128,6 +128,16 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         ),
     );
 
+    // A modal that fades in and is hidden with visibility rather than display, as many popup plugins do
+    [$inPage, $inModal] = $placements(7, 2);
+    file_put_contents(
+        "{$out}/modal-visibility.html",
+        $page(
+            "<section id='top'>{$inPage}</section><div class='spacer'></div><div id='modal'>{$inModal}</div>",
+            '#modal { position: fixed; inset: 10vh 10vw; background: #fff; overflow: auto; visibility: hidden; opacity: 0; transition: opacity 0.2s, visibility 0s 0.2s; } #modal.is-open { visibility: visible; opacity: 1; transition: opacity 0.2s; }',
+        ),
+    );
+
     // Two placements close enough to be on screen together
     [$first, $second] = $placements(7, 2);
     file_put_contents(

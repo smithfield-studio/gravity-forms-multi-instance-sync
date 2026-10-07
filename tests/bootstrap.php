@@ -26,7 +26,7 @@ if (!file_exists("{$_tests_dir}/includes/functions.php")) {
 require_once "{$_tests_dir}/includes/functions.php";
 
 // Gravity Forms isn't needed: the tests call the plugin's gform_get_form_filter callback with sample markup
-tests_add_filter('muplugins_loaded', function () {
+tests_add_filter('muplugins_loaded', function (): void {
     require dirname(__FILE__, 2) . '/gravity-forms-multi-instance-sync.php';
 });
 

@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-// Locally this uses the installed Chrome; CI installs Playwright's Chromium
+// Playwright's Chromium by default; PLAYWRIGHT_CHANNEL=chrome uses the installed Chrome instead
 export default defineConfig({
   testDir: 'tests/e2e',
   globalSetup: './tests/e2e/global-setup.mjs',
@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     browserName: 'chromium',
-    channel: process.env.CI ? undefined : 'chrome',
+    channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
     viewport: { width: 1280, height: 800 },
   },
 });

@@ -2,10 +2,10 @@ includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 parameters:
     level: 10 # max (PHPStan 2.x)
-    # Match the composer platform pin, so PHPStan flags syntax newer than 8.2
+    # Match the composer platform pin, so PHPStan flags syntax newer than 8.4
     phpVersion:
-        min: 80200
-        max: 80299
+        min: 80400
+        max: 80499
     paths:
         - gravity-forms-multi-instance-sync.php
         - src/
