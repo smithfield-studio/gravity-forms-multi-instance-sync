@@ -19,11 +19,10 @@
     (groups[id] = groups[id] || []).push(slot);
   });
 
-  // Opacity isn't checked: scroll animations fade sections in from 0, which would read as a reveal
+  // Computed visibility is inherited, so it covers a hidden ancestor. Opacity isn't checked: scroll animations fade
+  // sections in from 0, which would read as a reveal
   var isShown = function (slot) {
-    return slot.checkVisibility
-      ? slot.checkVisibility({ visibilityProperty: true })
-      : slot.getClientRects().length > 0;
+    return slot.getClientRects().length > 0 && getComputedStyle(slot).visibility === 'visible';
   };
 
   Object.keys(groups).forEach(function (id) {
@@ -155,13 +154,15 @@
     });
   };
 
-  // Display changes resize the slot; visibility changes come from an attribute or a transition ending
+  // Display changes resize the slot; visibility changes come from an attribute, a transition ending or a breakpoint
   if ('ResizeObserver' in window) {
     var resize = new ResizeObserver(schedule);
     allSlots.forEach(function (slot) {
       resize.observe(slot);
     });
   }
+
+  window.addEventListener('resize', schedule);
 
   new MutationObserver(function (records) {
     if (
@@ -171,11 +172,7 @@
     ) {
       schedule();
     }
-  }).observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['class', 'style', 'hidden', 'open'],
-    subtree: true,
-  });
+  }).observe(document.documentElement, { attributes: true, subtree: true });
 
   ['transitionend', 'animationend'].forEach(function (type) {
     document.addEventListener(

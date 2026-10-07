@@ -130,6 +130,22 @@ test.describe('a mobile-only and a desktop-only placement', () => {
   });
 });
 
+test.describe('a mobile-only and a desktop-only placement hidden with visibility', () => {
+  test('moves to the placement that shows, on load and across the breakpoint', async ({ page }) => {
+    const errors = await open(page, 'mobile-and-desktop-visibility');
+    expect(await holder(page)).toBe('desktop');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('mobile');
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('desktop');
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('the form on the page and in a modal', () => {
   test('moves into the modal when it opens, even with the page form on screen, and back when it closes', async ({
     page,
@@ -190,6 +206,23 @@ test.describe('the form on the page and in a modal hidden with visibility', () =
     await page.waitForTimeout(600);
     expect(await holder(page)).toBe('top');
     await expect(page.locator('#input_7_1')).toHaveValue('visitor@example.com');
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('the form on the page and in a modal hidden by an attribute', () => {
+  test('moves into the modal when the attribute changes, and back', async ({ page }) => {
+    const errors = await open(page, 'modal-aria-hidden');
+
+    await page.evaluate(() =>
+      document.getElementById('modal').setAttribute('aria-hidden', 'false'),
+    );
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('modal');
+
+    await page.evaluate(() => document.getElementById('modal').setAttribute('aria-hidden', 'true'));
+    await page.waitForTimeout(400);
+    expect(await holder(page)).toBe('top');
     expect(errors).toEqual([]);
   });
 });

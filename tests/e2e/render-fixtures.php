@@ -119,6 +119,16 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         ),
     );
 
+    // The same, hidden with visibility at fixed widths, so resizing changes neither placement's size
+    [$mobile, $desktop] = $placements(7, 2);
+    file_put_contents(
+        "{$out}/mobile-and-desktop-visibility.html",
+        $page(
+            "<section class='mobile-only' id='mobile'>{$mobile}</section><section class='desktop-only' id='desktop'>{$desktop}</section><div class='spacer'></div>",
+            'section { width: 320px; } @media (max-width: 767px) { .desktop-only { visibility: hidden; } } @media (min-width: 768px) { .mobile-only { visibility: hidden; } }',
+        ),
+    );
+
     // The form on the page and in a modal
     [$inPage, $inModal] = $placements(7, 2);
     file_put_contents(
@@ -135,6 +145,16 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         $page(
             "<section id='top'>{$inPage}</section><div class='spacer'></div><div id='modal'>{$inModal}</div>",
             '#modal { position: fixed; inset: 10vh 10vw; background: #fff; overflow: auto; visibility: hidden; opacity: 0; transition: opacity 0.2s, visibility 0s 0.2s; } #modal.is-open { visibility: visible; opacity: 1; transition: opacity 0.2s; }',
+        ),
+    );
+
+    // A modal hidden by an attribute selector, with no transition
+    [$inPage, $inModal] = $placements(7, 2);
+    file_put_contents(
+        "{$out}/modal-aria-hidden.html",
+        $page(
+            "<section id='top'>{$inPage}</section><div class='spacer'></div><div id='modal' aria-hidden='true'>{$inModal}</div>",
+            '#modal { position: fixed; inset: 10vh 10vw; background: #fff; overflow: auto; } #modal[aria-hidden="true"] { visibility: hidden; }',
         ),
     );
 

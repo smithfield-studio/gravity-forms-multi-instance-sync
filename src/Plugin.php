@@ -134,7 +134,7 @@ final class Plugin {
         return <<<JS
             (function (slot) {
                 var shown = function (el) {
-                    return el.checkVisibility ? el.checkVisibility({ visibilityProperty: true }) : el.getClientRects().length > 0;
+                    return el.getClientRects().length > 0 && getComputedStyle(el).visibility === 'visible';
                 };
                 var current = document.getElementById('gf-mis-form-{$id}');
                 var form = current && current.querySelector('.gf-mis-slot__form');
