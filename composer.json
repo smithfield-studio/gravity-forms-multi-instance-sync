@@ -1,0 +1,31 @@
+{
+    "name": "smithfield-studio/gravity-forms-multi-instance-sync",
+    "description": "Place the same Gravity Form more than once on a page: it renders once and moves to whichever placement the visitor scrolls to.",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "keywords": [
+        "wordpress",
+        "gravity-forms",
+        "multiple-instances"
+    ],
+    "authors": [
+        {
+            "name": "Mike Sheppard",
+            "email": "mike@smithfield.studio",
+            "homepage": "https://smithfield.studio"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/smithfield-studio/gravity-forms-multi-instance-sync/issues",
+        "source": "https://github.com/smithfield-studio/gravity-forms-multi-instance-sync"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "SmithfieldStudio\\GravityFormsMultiInstanceSync\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=8.2"
+    }
+}
