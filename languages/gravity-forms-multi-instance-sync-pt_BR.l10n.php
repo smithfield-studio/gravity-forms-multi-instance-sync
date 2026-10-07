@@ -1,10 +1,2 @@
 <?php
-
-return [
-    'domain' => 'gravity-forms-multi-instance-sync',
-    'plural-forms' => 'nplurals=2; plural=(n != 1);',
-    'language' => 'pt_BR',
-    'messages' => [
-        'Go to the form' => 'Ir para o formulário',
-    ],
-];
+return ['domain'=>'gravity-forms-multi-instance-sync','plural-forms'=>'nplurals=2; plural=(n != 1);','language'=>'pt_BR','project-id-version'=>'Multi-Instance Sync for Gravity Forms 1.0.0','pot-creation-date'=>'2026-10-07T14:55:57+00:00','po-revision-date'=>'2026-10-07 15:00+0100','x-generator'=>'WP-CLI 2.12.0','messages'=>['Go to the form'=>'Ir para o formulário']];
