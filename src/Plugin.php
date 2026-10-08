@@ -101,7 +101,8 @@ final class Plugin {
     }
 
     /**
-     * Renders templates/link.php, or the theme's gravity-forms-multi-instance-sync/link.php.
+     * Renders templates/link.php, or the theme's gravity-forms-multi-instance-sync/link.php, in a wrapper the script
+     * shows and hides, so the template can be any markup (e.g. a theme's full button markup).
      *
      * @param array<string, mixed> $form
      */
@@ -117,18 +118,18 @@ final class Plugin {
          */
         $template = (string) apply_filters('gform_multi_instance_sync_link_template', $template, $form);
 
-        $attributes = sprintf(
-            'href="#gf-mis-form-%d" data-gf-mis-link%s',
-            $this->formId($form),
-            $hidden ? ' style="display: none"' : '',
-        );
+        $attributes = sprintf('href="#gf-mis-form-%d"', $this->formId($form));
 
         ob_start();
         (static function (string $template, array $form, string $attributes): void {
             include $template;
         })($template, $form, $attributes);
 
-        return trim((string) ob_get_clean());
+        return sprintf(
+            '<div class="gf-mis-slot__fallback" data-gf-mis-link%s>%s</div>',
+            $hidden ? ' style="display: none"' : '',
+            trim((string) ob_get_clean()),
+        );
     }
 
     /**

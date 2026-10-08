@@ -3,11 +3,11 @@
 /**
  * The link that stands in for a form in a placement it isn't in.
  *
- * Override it by copying this file to your theme as gravity-forms-multi-instance-sync/link.php. Keep $attributes on
- * the link: the script uses them to find it and show or hide it.
+ * Override it by copying this file to your theme as gravity-forms-multi-instance-sync/link.php. The plugin wraps it in
+ * an element it shows and hides, so the template can be any markup. Keep $attributes on the link.
  *
  * @var array<string, mixed> $form       The Gravity Forms form
- * @var string               $attributes The link's href, data attribute and visibility
+ * @var string               $attributes The link's href
  */
 
 defined('ABSPATH') || exit();

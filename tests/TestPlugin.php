@@ -21,7 +21,10 @@ class TestPlugin extends WP_UnitTestCase {
 
         $this->assertStringContainsString('id="gf-mis-form-7"', $html);
         $this->assertStringContainsString('<div class="gf-mis-slot__form">' . $this->markup . '</div>', $html);
-        $this->assertStringContainsString('href="#gf-mis-form-7" data-gf-mis-link style="display: none"', $html);
+        $this->assertStringContainsString(
+            '<div class="gf-mis-slot__fallback" data-gf-mis-link style="display: none"><a class="gf-mis-slot__link button" href="#gf-mis-form-7">',
+            $html,
+        );
         $this->assertFalse(wp_script_is('gf-multi-instance-sync', 'enqueued'));
     }
 
@@ -31,7 +34,10 @@ class TestPlugin extends WP_UnitTestCase {
 
         $this->assertStringNotContainsString('gform_wrapper_7', $html);
         $this->assertStringContainsString('<div class="gf-mis-slot" data-gf-mis-form="7">', $html);
-        $this->assertStringContainsString('href="#gf-mis-form-7" data-gf-mis-link>Go to the form</a>', $html);
+        $this->assertStringContainsString(
+            '<div class="gf-mis-slot__fallback" data-gf-mis-link><a class="gf-mis-slot__link button" href="#gf-mis-form-7">Go to the form</a></div>',
+            $html,
+        );
         $this->assertStringContainsString('<script id="gf-mis-move-7-2">', $html);
         $this->assertTrue(wp_script_is('gf-multi-instance-sync', 'enqueued'));
     }
@@ -53,7 +59,10 @@ class TestPlugin extends WP_UnitTestCase {
 
     public function test_the_link_template_can_be_replaced(): void {
         $template = get_temp_dir() . 'gf-mis-link-test.php';
-        file_put_contents($template, '<a class="custom" <?php echo $attributes; ?>>Custom</a>');
+        file_put_contents(
+            $template,
+            '<div class="wp-block-button"><a class="wp-block-button__link" <?php echo $attributes; ?>>Custom</a></div>',
+        );
         $filter = fn(): string => $template;
         add_filter('gform_multi_instance_sync_link_template', $filter);
 
@@ -62,7 +71,10 @@ class TestPlugin extends WP_UnitTestCase {
 
         remove_filter('gform_multi_instance_sync_link_template', $filter);
         unlink($template);
-        $this->assertStringContainsString('<a class="custom" href="#gf-mis-form-7" data-gf-mis-link>Custom</a>', $html);
+        $this->assertStringContainsString(
+            '<div class="gf-mis-slot__fallback" data-gf-mis-link><div class="wp-block-button"><a class="wp-block-button__link" href="#gf-mis-form-7">Custom</a></div></div>',
+            $html,
+        );
     }
 
     public function test_the_scripts_are_excluded_from_wp_rocket_delay_js(): void {

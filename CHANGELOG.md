@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+- The link template is wrapped in an element the plugin shows and hides, so the template can be any markup, such as a theme's full button markup. `$attributes` now holds only the link's `href`.
+
 ## 1.0.1
 
 - The main script is excluded from WP Rocket's Delay JS by its file name, so the exclusion holds when the script tag's id is stripped (e.g. by Soil's clean-up).
