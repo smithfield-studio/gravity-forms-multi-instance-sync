@@ -84,16 +84,21 @@
           }
         });
 
-        var target = slots.filter(function (slot) {
-          return slot !== holder && near.has(slot) && isShown(slot);
-        })[0];
-
-        if (target && !(near.has(holder) && isShown(holder))) {
-          moveTo(target);
-        }
+        followScroll();
       },
       { rootMargin: '50% 0px' },
     );
+
+    // A move blocked by a submission is retried until it ends, as nothing else may change once the visitor stops
+    var followScroll = function () {
+      var target = slots.filter(function (slot) {
+        return slot !== holder && near.has(slot) && isShown(slot);
+      })[0];
+
+      if (target && !(near.has(holder) && isShown(holder)) && !moveTo(target)) {
+        setTimeout(schedule, 250);
+      }
+    };
 
     // A slot going from hidden to shown has been revealed on purpose, e.g. a modal opening. A reveal while the form
     // is submitting stays pending (the slot isn't marked shown) until the move can happen or the slot hides again.
@@ -122,6 +127,8 @@
           setTimeout(schedule, 250);
         }
       }
+
+      followScroll();
     });
 
     slots.forEach(function (slot) {

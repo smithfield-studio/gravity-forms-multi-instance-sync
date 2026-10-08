@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- A move held back while the form is submitting happens once the submission ends, so the form follows a visitor who scrolled to another placement in the meantime.
+
 ## 1.1.0
 
 - The link template is wrapped in an element the plugin shows and hides, so the template can be any markup, such as a theme's full button markup. `$attributes` now holds only the link's `href`.

@@ -82,6 +82,19 @@ test.describe('the same form at the top and bottom of a page', () => {
     expect(await holder(page)).toBe('top');
   });
 
+  test('follows the visitor to the placement they scrolled to once the submission ends', async ({
+    page,
+  }) => {
+    await open(page, 'top-and-bottom');
+    await page.evaluate(() => (window.gf_submitting_7 = true));
+    await scrollTo(page, '#bottom');
+    expect(await holder(page)).toBe('top');
+
+    await page.evaluate(() => (window.gf_submitting_7 = false));
+
+    await expect.poll(() => holder(page)).toBe('bottom');
+  });
+
   test('the link in an empty placement scrolls to the form', async ({ page }) => {
     await open(page, 'top-and-bottom');
     await page.evaluate(() => (window.gf_submitting_7 = true));
