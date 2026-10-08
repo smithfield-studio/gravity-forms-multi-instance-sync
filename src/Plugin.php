@@ -80,14 +80,15 @@ final class Plugin {
 
     /**
      * WP Rocket's Delay JS would hold back the move out of a hidden placement until the visitor interacts, and a
-     * modal opened before the main script runs would show its link instead of the form.
+     * modal opened before the main script runs would show its link instead of the form. WP Rocket matches each pattern
+     * against the whole tag; the main script is matched by its file name, as Soil's clean-up strips script ids.
      *
      * @return list<string>
      */
     public function excludeFromDelayJs(mixed $excluded): array {
         $excluded = is_array($excluded) ? array_values(array_filter($excluded, is_string(...))) : [];
         $excluded[] = 'gf-mis-move-';
-        $excluded[] = 'gf-multi-instance-sync-js';
+        $excluded[] = '/multi-instance-sync.js';
 
         return $excluded;
     }

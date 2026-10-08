@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Plugin Name:       Multi-Instance Sync for Gravity Forms
  * Plugin URI:        https://github.com/smithfield-studio/gravity-forms-multi-instance-sync
  * Description:       Place the same Gravity Form more than once on a page. It renders once and moves to whichever placement the visitor scrolls to, keeping their answers.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            Smithfield
  * Author URI:        https://smithfield.studio
  * License:           MIT
@@ -26,4 +26,4 @@ defined('ABSPATH') || exit();
 
 require_once __DIR__ . '/src/Plugin.php';
 
-new Plugin(__FILE__, '1.0.0')->boot();
+new Plugin(__FILE__, '1.0.1')->boot();
