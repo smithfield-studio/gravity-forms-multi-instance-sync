@@ -2,7 +2,7 @@ php-version = "8.4"
 
 [source]
 paths = ["gravity-forms-multi-instance-sync.php", "src", "templates", "tests"]
-excludes = ["vendor/**", "node_modules/**"]
+excludes = ["vendor/**", "node_modules/**", "tests/e2e/.fixtures/**"]
 
 [formatter]
 function-brace-style = "same_line"

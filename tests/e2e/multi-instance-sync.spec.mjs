@@ -82,6 +82,43 @@ test.describe('the same form at the top and bottom of a page', () => {
     expect(await holder(page)).toBe('top');
   });
 
+  test('follows the visitor to the placement they scrolled to once the submission ends', async ({
+    page,
+  }) => {
+    await open(page, 'top-and-bottom');
+    await page.evaluate(() => (window.gf_submitting_7 = true));
+    await scrollTo(page, '#bottom');
+    expect(await holder(page)).toBe('top');
+
+    await page.evaluate(() => (window.gf_submitting_7 = false));
+
+    await expect.poll(() => holder(page)).toBe('bottom');
+  });
+
+  test('keeps a single retry going while the visitor scrolls past placements during a submission', async ({
+    page,
+  }) => {
+    await open(page, 'three-placements');
+    await page.evaluate(() => {
+      window.gf_submitting_7 = true;
+      window.retries = 0;
+      const setTimeout = window.setTimeout;
+      window.setTimeout = (callback, delay, ...rest) => {
+        if (delay === 250) window.retries++;
+        return setTimeout(callback, delay, ...rest);
+      };
+    });
+
+    await scrollTo(page, '#two');
+    await scrollTo(page, '#three');
+    const before = await page.evaluate(() => window.retries);
+    await page.waitForTimeout(1000);
+
+    expect((await page.evaluate(() => window.retries)) - before).toBeLessThanOrEqual(5);
+    await page.evaluate(() => (window.gf_submitting_7 = false));
+    await expect.poll(() => holder(page)).toBe('three');
+  });
+
   test('the link in an empty placement scrolls to the form', async ({ page }) => {
     await open(page, 'top-and-bottom');
     await page.evaluate(() => (window.gf_submitting_7 = true));
