@@ -89,14 +89,20 @@
       { rootMargin: '50% 0px' },
     );
 
-    // A move blocked by a submission is retried until it ends, as nothing else may change once the visitor stops
+    // A move blocked by a submission is retried until it ends, as nothing else may change once the visitor stops.
+    // One retry at a time, however many intersection changes hit the block
+    var retrying = false;
     var followScroll = function () {
       var target = slots.filter(function (slot) {
         return slot !== holder && near.has(slot) && isShown(slot);
       })[0];
 
-      if (target && !(near.has(holder) && isShown(holder)) && !moveTo(target)) {
-        setTimeout(followScroll, 250);
+      if (target && !(near.has(holder) && isShown(holder)) && !moveTo(target) && !retrying) {
+        retrying = true;
+        setTimeout(function () {
+          retrying = false;
+          followScroll();
+        }, 250);
       }
     };
 
@@ -107,7 +113,7 @@
         var isShownNow = isShown(slot);
 
         if (isShownNow && shown.get(slot) === false && !moveTo(slot)) {
-          setTimeout(schedule, 250);
+          retryCheck();
           return;
         }
 
@@ -124,7 +130,7 @@
           })[0] || candidates[0];
 
         if (target && !moveTo(target)) {
-          setTimeout(schedule, 250);
+          retryCheck();
         }
       }
     });
@@ -150,6 +156,15 @@
   // attribute on the page can reveal a slot (e.g. a sibling selector), and animations change attributes every frame
   var scheduled = false;
   var lastCheck = 0;
+  var retryTimer = null;
+  var retryCheck = function () {
+    if (!retryTimer) {
+      retryTimer = setTimeout(function () {
+        retryTimer = null;
+        schedule();
+      }, 250);
+    }
+  };
   var check = function () {
     scheduled = false;
     lastCheck = Date.now();

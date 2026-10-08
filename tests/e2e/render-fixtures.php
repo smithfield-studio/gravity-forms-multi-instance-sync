@@ -109,6 +109,15 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         ),
     );
 
+    // The same form in three placements down the page
+    [$first, $second, $third] = $placements(7, 3);
+    file_put_contents(
+        "{$out}/three-placements.html",
+        $page(
+            "<section id='one'>{$first}</section><div class='spacer'></div><section id='two'>{$second}</section><div class='spacer'></div><section id='three'>{$third}</section><div class='spacer'></div>",
+        ),
+    );
+
     // A mobile-only block first and a desktop-only block second, as on /lp/contract-management/
     [$mobile, $desktop] = $placements(7, 2);
     file_put_contents(
