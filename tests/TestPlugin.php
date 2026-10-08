@@ -67,10 +67,26 @@ class TestPlugin extends WP_UnitTestCase {
 
     public function test_the_scripts_are_excluded_from_wp_rocket_delay_js(): void {
         $this->assertSame(
-            ['existing', 'gf-mis-move-', 'gf-multi-instance-sync-js'],
+            ['existing', 'gf-mis-move-', '/multi-instance-sync.js'],
             $this->plugin->excludeFromDelayJs(['existing']),
         );
-        $this->assertSame(['gf-mis-move-', 'gf-multi-instance-sync-js'], $this->plugin->excludeFromDelayJs(null));
+        $this->assertSame(['gf-mis-move-', '/multi-instance-sync.js'], $this->plugin->excludeFromDelayJs(null));
+    }
+
+    public function test_the_exclusions_match_the_script_tags_as_wp_rocket_does_even_without_ids(): void {
+        $tags = [
+            '<script src="https://example.com/app/plugins/gravity-forms-multi-instance-sync/assets/multi-instance-sync.js?ver=1.0.1" defer data-wp-strategy="defer"></script>',
+            '<script src="https://example.com/app/cache/min/1/app/plugins/gf-mis/assets/multi-instance-sync.js?ver=1.0.1" defer></script>',
+            '<script id="gf-mis-move-7-2">',
+        ];
+        $patterns = $this->plugin->excludeFromDelayJs([]);
+
+        foreach ($tags as $tag) {
+            $this->assertTrue(
+                array_any($patterns, static fn(string $pattern): bool => preg_match("#{$pattern}#i", $tag) === 1),
+                $tag,
+            );
+        }
     }
 
     public function test_ajax_requests_are_left_alone(): void {
