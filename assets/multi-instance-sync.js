@@ -96,7 +96,7 @@
       })[0];
 
       if (target && !(near.has(holder) && isShown(holder)) && !moveTo(target)) {
-        setTimeout(schedule, 250);
+        setTimeout(followScroll, 250);
       }
     };
 
@@ -127,8 +127,6 @@
           setTimeout(schedule, 250);
         }
       }
-
-      followScroll();
     });
 
     slots.forEach(function (slot) {
