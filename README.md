@@ -32,10 +32,14 @@ Or install it as a regular plugin and activate it. No settings.
 
 An empty slot shows a link to the form, "Go to the form", translated for da_DK, de_DE, es_ES, fi/fi_FI, fr_FR, it_IT, nb_NO, nl_NL, pt_BR, pt_PT and sv_SE (`languages/`, from `gravity-forms-multi-instance-sync.pot`). A translation in `wp-content/languages/plugins/` takes precedence, and the link follows `switch_to_locale()`.
 
-To change its markup, copy `templates/link.php` to your theme as `gravity-forms-multi-instance-sync/link.php`. Keep `$attributes` on the link: the script uses them to find it and show or hide it.
+To change its markup, copy `templates/link.php` to your theme as `gravity-forms-multi-instance-sync/link.php`. The plugin wraps the template in an element it shows and hides, so it can be any markup, such as your theme's full button markup. Keep `$attributes` (the link's `href`) on the link.
 
 ```php
-<a class="button button--primary" <?php echo $attributes; ?>><?php esc_html_e('Book a demo', 'my-theme'); ?></a>
+<div class="wp-block-buttons">
+  <div class="wp-block-button">
+    <a class="wp-block-button__link" <?php echo $attributes; ?>><?php esc_html_e('Book a demo', 'my-theme'); ?></a>
+  </div>
+</div>
 ```
 
 For themes that keep views elsewhere, `gform_multi_instance_sync_link_template` filters the template's path.

@@ -59,7 +59,7 @@ test.describe('the same form at the top and bottom of a page', () => {
     expect(await page.locator('#top .gf-mis-slot').evaluate((slot) => slot.offsetHeight)).toBe(
       height,
     );
-    await expect(page.locator('#top [data-gf-mis-link]')).toHaveCSS('display', 'inline');
+    await expect(page.locator('#top [data-gf-mis-link]')).toHaveCSS('display', 'block');
   });
 
   test('keeps its element IDs, so conditional logic still finds its fields after a move', async ({
@@ -87,7 +87,7 @@ test.describe('the same form at the top and bottom of a page', () => {
     await page.evaluate(() => (window.gf_submitting_7 = true));
     await scrollTo(page, '#bottom');
 
-    await page.click('#bottom [data-gf-mis-link]');
+    await page.click('#bottom [data-gf-mis-link] a');
     await page.waitForTimeout(800);
 
     await expect(page.locator('#gform_wrapper_7')).toBeInViewport();
@@ -320,6 +320,25 @@ test.describe('two different forms', () => {
   });
 });
 
+test.describe('a link template with wrapper markup', () => {
+  test('hides and shows the whole template, leaving no space under the form', async ({ page }) => {
+    await open(page, 'wrapped-link');
+
+    const gapUnderForm = await page.evaluate(() => {
+      const form = document.querySelector('#top .gf-mis-slot__form').getBoundingClientRect();
+      const next = document.querySelector('#top').nextElementSibling.getBoundingClientRect();
+      return Math.round(next.top - form.bottom);
+    });
+    expect(gapUnderForm).toBe(0);
+    await expect(page.locator('#bottom .wp-block-button__link')).toBeVisible();
+
+    await scrollTo(page, '#bottom');
+    await expect.poll(() => holder(page)).toBe('bottom');
+    await expect(page.locator('#top .wp-block-button__link')).toBeVisible();
+    await expect(page.locator('#bottom .wp-block-button__link')).toBeHidden();
+  });
+});
+
 test.describe('a single placement', () => {
   test('is left as it is', async ({ page }) => {
     const errors = await open(page, 'single');
@@ -337,7 +356,7 @@ test.describe('without JavaScript', () => {
     await page.goto(fixture('top-and-bottom'));
 
     expect(await page.locator('#top .gf-mis-slot').getAttribute('id')).toBe('gf-mis-form-7');
-    await expect(page.locator('#bottom [data-gf-mis-link]')).toHaveAttribute(
+    await expect(page.locator('#bottom [data-gf-mis-link] a')).toHaveAttribute(
       'href',
       '#gf-mis-form-7',
     );

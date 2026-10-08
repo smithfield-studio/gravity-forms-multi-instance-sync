@@ -16,7 +16,7 @@ namespace {
     function add_filter(): void {}
 
     function apply_filters(string $hook, mixed $value): mixed {
-        return $value;
+        return $GLOBALS['fixture_filters'][$hook] ?? $value;
     }
 
     function is_admin(): bool {
@@ -214,6 +214,22 @@ namespace SmithfieldStudio\GravityFormsMultiInstanceSync\Tests {
         "{$out}/two-forms.html",
         $page(
             "<section id='a-top'>{$aTop}</section><section id='b-top'>{$bTop}</section><div class='spacer'></div><section id='a-bottom'>{$aBottom}</section><div class='spacer'></div><section id='b-bottom'>{$bBottom}</section><div class='spacer'></div>",
+        ),
+    );
+
+    // A theme template with wrapper markup and a margin, like full button markup
+    $template = "{$out}/wrapped-link.php";
+    file_put_contents(
+        $template,
+        '<div class="wp-block-buttons" style="margin-top: 2rem"><div class="wp-block-button"><a class="wp-block-button__link" <?php echo $attributes; ?>>Go to the form</a></div></div>',
+    );
+    $GLOBALS['fixture_filters']['gform_multi_instance_sync_link_template'] = $template;
+    [$top, $bottom] = $placements(7, 2);
+    unset($GLOBALS['fixture_filters']);
+    file_put_contents(
+        "{$out}/wrapped-link.html",
+        $page(
+            "<section id='top'>{$top}</section><div class='spacer'></div><section id='bottom'>{$bottom}</section><div class='spacer'></div>",
         ),
     );
 
